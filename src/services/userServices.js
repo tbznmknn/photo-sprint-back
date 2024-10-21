@@ -1,117 +1,128 @@
-const db = require("../utils/prismaClient"); // Assuming you're using Prisma
 const AppError = require("../utils/AppError");
 const bcrypt = require("bcrypt");
-
-exports.getUsers = async (userId, queries) => {
-  const page = parseInt(queries.page) || 1;
-  const limit = parseInt(queries.limit) || 10;
-  const skip = (page - 1) * limit;
-
-  const searchQuery = queries.search || ""; // Single search query for all columns
-
-  const sortField = queries.sortField || "createdAt";
-  const sortOrder = queries.sortOrder || "desc";
-
-  const filters = {
-    OR: [
-      { email: { contains: searchQuery } },
-      { username: { contains: searchQuery } },
-      { telephone: { contains: searchQuery } },
-      { firstName: { contains: searchQuery } },
-      { lastName: { contains: searchQuery } },
-    ],
-  };
-
-  try {
-    const users = await db.user.findMany({
-      skip,
-      take: limit,
-      where: filters,
-      orderBy: {
-        [sortField]: sortOrder,
-      },
-      select: {
-        id: true,
-        email: true,
-        emailVerified: true,
-        username: true,
-        createdAt: true,
-        modifiedAt: true,
-        firstName: true,
-        lastName: true,
-        telephone: true,
-        role: true,
-      },
-    });
-
-    const total = await db.user.count({
-      where: filters,
-    });
-
-    const totalPages = Math.ceil(total / limit);
-    return {
-      users,
-      pagination: {
-        total,
-        totalPages,
-        currentPage: page,
-        limit,
-      },
-    };
-  } catch (errors) {
-    throw new AppError(errors);
-  }
+const { cs142models } = require("./photoApp");
+exports.getUsers5 = async () => {
+  const users = cs142models.userListModel();
+  return users;
 };
-exports.getUserDetail = async (userId) => {
-  if (!userId) throw new AppError("Хэрэглэгчийн ID оруулна уу", 400);
-
-  const existingUser = await db.user.findUnique({
-    where: {
-      id: userId,
-    },
-  });
-
-  if (!existingUser) {
-    throw new AppError("Хэрэглэгч олдсонгүй", 409);
-  }
-  delete existingUser.password;
-  return existingUser;
+exports.getDetails5 = async (id) => {
+  const user = cs142models.userModel(id);
+  return user;
 };
-exports.editUserDetails = async (userId, userData) => {
-  if (!userId) throw new AppError("Хэрэглэгийн ID оруулна уу", 400);
-  const { firstName, lastName, username, password } = userData;
-
-  const existingUser = await db.user.findUnique({
-    where: {
-      id: userId,
-    },
-  });
-  if (!existingUser) {
-    throw new AppError("Хэрэглэгч олдсонгүй", 409);
-  }
-  const existingUsername = await db.user.findUnique({
-    where: {
-      username: username,
-    },
-  });
-  if (existingUsername) {
-    throw new AppError("Хэрэглэгчийн нэр аль хэдийн авсан байна", 400);
-  }
-  const passwordMatch = await bcrypt.compare(password, existingUser.password);
-  if (!passwordMatch) throw new AppError("Буруу нууц үг", 401);
-  const changedUser = await db.user.update({
-    where: {
-      id: existingUser.id,
-    },
-    data: {
-      firstName: firstName || undefined,
-      lastName: lastName || undefined,
-      username: username || undefined,
-    },
-  });
-  delete changedUser.password;
-  return changedUser;
+exports.getPhotos5 = async (id) => {
+  const photos = cs142models.photoOfUserModel(id);
+  return photos;
 };
+// exports.getUsers = async (userId, queries) => {
+//   const page = parseInt(queries.page) || 1;
+//   const limit = parseInt(queries.limit) || 10;
+//   const skip = (page - 1) * limit;
+
+//   const searchQuery = queries.search || ""; // Single search query for all columns
+
+//   const sortField = queries.sortField || "createdAt";
+//   const sortOrder = queries.sortOrder || "desc";
+
+//   const filters = {
+//     OR: [
+//       { email: { contains: searchQuery } },
+//       { username: { contains: searchQuery } },
+//       { telephone: { contains: searchQuery } },
+//       { firstName: { contains: searchQuery } },
+//       { lastName: { contains: searchQuery } },
+//     ],
+//   };
+
+//   try {
+//     const users = await db.user.findMany({
+//       skip,
+//       take: limit,
+//       where: filters,
+//       orderBy: {
+//         [sortField]: sortOrder,
+//       },
+//       select: {
+//         id: true,
+//         email: true,
+//         emailVerified: true,
+//         username: true,
+//         createdAt: true,
+//         modifiedAt: true,
+//         firstName: true,
+//         lastName: true,
+//         telephone: true,
+//         role: true,
+//       },
+//     });
+
+//     const total = await db.user.count({
+//       where: filters,
+//     });
+
+//     const totalPages = Math.ceil(total / limit);
+//     return {
+//       users,
+//       pagination: {
+//         total,
+//         totalPages,
+//         currentPage: page,
+//         limit,
+//       },
+//     };
+//   } catch (errors) {
+//     throw new AppError(errors);
+//   }
+// };
+// exports.getUserDetail = async (userId) => {
+//   if (!userId) throw new AppError("Хэрэглэгчийн ID оруулна уу", 400);
+
+//   const existingUser = await db.user.findUnique({
+//     where: {
+//       id: userId,
+//     },
+//   });
+
+//   if (!existingUser) {
+//     throw new AppError("Хэрэглэгч олдсонгүй", 409);
+//   }
+//   delete existingUser.password;
+//   return existingUser;
+// };
+// exports.editUserDetails = async (userId, userData) => {
+//   if (!userId) throw new AppError("Хэрэглэгийн ID оруулна уу", 400);
+//   const { firstName, lastName, username, password } = userData;
+
+//   const existingUser = await db.user.findUnique({
+//     where: {
+//       id: userId,
+//     },
+//   });
+//   if (!existingUser) {
+//     throw new AppError("Хэрэглэгч олдсонгүй", 409);
+//   }
+//   const existingUsername = await db.user.findUnique({
+//     where: {
+//       username: username,
+//     },
+//   });
+//   if (existingUsername) {
+//     throw new AppError("Хэрэглэгчийн нэр аль хэдийн авсан байна", 400);
+//   }
+//   const passwordMatch = await bcrypt.compare(password, existingUser.password);
+//   if (!passwordMatch) throw new AppError("Буруу нууц үг", 401);
+//   const changedUser = await db.user.update({
+//     where: {
+//       id: existingUser.id,
+//     },
+//     data: {
+//       firstName: firstName || undefined,
+//       lastName: lastName || undefined,
+//       username: username || undefined,
+//     },
+//   });
+//   delete changedUser.password;
+//   return changedUser;
+// };
 
 //OR HAILT
 // exports.getUsers = async (req, res) => {

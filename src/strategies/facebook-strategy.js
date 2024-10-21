@@ -1,4 +1,3 @@
-const db = require("../utils/prismaClient"); // Assuming you're using Prisma
 const bcrypt = require("bcrypt");
 var FacebookStrategy = require("passport-facebook").Strategy;
 const passport = require("passport");
