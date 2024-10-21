@@ -1,0 +1,423 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+
+  //LOCALHOST дээр ДБ ажлуулвал directUrl коммент болгоно.
+  // directUrl = env("DIRECT_URL")
+}
+
+//Google,facebook зэрэг OAUTH-тай холбогдсон хэрэглэгчид
+model Account {
+  id                String       @id @default(cuid())
+  userId            Int
+  providerType      ProviderType
+  providerAccountId String?
+  createdAt         DateTime     @default(now())
+  updatedAt         DateTime     @updatedAt
+  user              User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([providerType, providerAccountId])
+}
+
+//Нийт хэрэглэгчид
+model User {
+  id               Int                     @id @default(autoincrement())
+  username         String                  @unique
+  password         String?
+  firstName        String
+  lastName         String
+  email            String                  @unique
+  role             UserRole                @default(CUSTOMER)
+  telephone        String?
+  createdAt        DateTime                @default(now())
+  modifiedAt       DateTime                @updatedAt
+  emailVerified    Boolean?
+  image            String?
+  cartItems        CartItem[]
+  loyaltyPoints    LoyaltyPoints?
+  orderDetails     OrderDetails[]
+  recommendations  ProductRecommendation[]
+  reviews          ProductReview[]
+  shoppingSessions ShoppingSession[]
+  addresses        UserAddress[]
+  payments         UserPayment[]
+  vendor           Vendor?
+  vendorRatings    VendorRating[]
+  wishlist         Wishlist[]
+  accounts         Account[]
+
+  @@index([email])
+  @@index([username])
+}
+
+//Вендорууд
+model Vendor {
+  id              Int             @id @default(autoincrement())
+  userId          Int             @unique
+  businessName    String
+  businessEmail   String          @unique
+  contactNumber   String
+  businessAddress String
+  commissionRate  Float           @default(10.0)
+  createdAt       DateTime        @default(now())
+  modifiedAt      DateTime        @updatedAt
+  products        Product[]
+  user            User            @relation(fields: [userId], references: [id])
+  payments        VendorPayment[]
+  ratings         VendorRating[]
+
+  @@index([businessEmail])
+}
+
+//Бүтээгдэхүүнүүд
+model Product {
+  id                     Int                     @id @default(autoincrement())
+  name                   String
+  description            String
+  sku                    String                  @unique
+  price                  Decimal
+  categoryId             Int
+  vendorId               Int
+  discountId             Int?
+  promotionId            Int?
+  flashSale              Boolean                 @default(false)
+  flashSaleEndDate       DateTime?
+  createdAt              DateTime                @default(now())
+  modifiedAt             DateTime                @updatedAt
+  deletedAt              DateTime?
+  cartItems              CartItem[]
+  orderItems             OrderItem[]
+  category               ProductCategory         @relation(fields: [categoryId], references: [id])
+  discount               Discount?               @relation(fields: [discountId], references: [id])
+  promotion              Promotion?              @relation(fields: [promotionId], references: [id])
+  vendor                 Vendor                  @relation(fields: [vendorId], references: [id])
+  inventory              ProductInventory?
+  productRecommendations ProductRecommendation[]
+  reviews                ProductReview[]
+  tags                   ProductTag[]
+  wishlistItems          Wishlist[]
+  ProductImages          ProductImages[]
+
+  @@index([name, sku, categoryId, vendorId])
+  @@index([name])
+}
+
+model ProductImages {
+  id        Int      @id @default(autoincrement())
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  imageUrl  String //zamiin hayg
+  altText   String //text for SEO
+  isPrimary Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  productId Int
+}
+
+//Бүтээгдэхүүний ангилал
+model ProductCategory {
+  id          Int         @id @default(autoincrement())
+  name        String
+  description String
+  createdAt   DateTime    @default(now())
+  modifiedAt  DateTime    @updatedAt
+  products    Product[]
+  promotions  Promotion[] @relation("ProductCategoryToPromotion")
+}
+
+//Бүтээгдэхүүний агуулах?
+model ProductInventory {
+  id         Int      @id @default(autoincrement())
+  productId  Int      @unique
+  quantity   Int
+  createdAt  DateTime @default(now())
+  modifiedAt DateTime @updatedAt
+  product    Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+}
+
+//Discount
+model Discount {
+  id              Int       @id @default(autoincrement())
+  name            String
+  description     String
+  discountPercent Decimal
+  active          Boolean   @default(true)
+  validFrom       DateTime
+  validUntil      DateTime
+  createdAt       DateTime  @default(now())
+  modifiedAt      DateTime  @updatedAt
+  products        Product[]
+}
+
+//Promotion
+model Promotion {
+  id              Int               @id @default(autoincrement())
+  promotionName   String
+  description     String
+  startDate       DateTime
+  endDate         DateTime
+  discountPercent Decimal
+  createdAt       DateTime          @default(now())
+  modifiedAt      DateTime          @updatedAt
+  products        Product[]
+  categories      ProductCategory[] @relation("ProductCategoryToPromotion")
+}
+
+//Shopping session. Хэцүү байж болох учраас ашиглахгүй байж магадгүй?
+model ShoppingSession {
+  id          Int           @id @default(autoincrement())
+  userId      Int
+  total       Decimal
+  status      SessionStatus @default(ACTIVE)
+  createdAt   DateTime      @default(now())
+  modifiedAt  DateTime      @updatedAt
+  abandonedAt DateTime?
+  cartItems   CartItem[]
+  user        User          @relation(fields: [userId], references: [id])
+
+  @@index([userId, status])
+}
+
+//Хэрэглэгчийн карт
+model CartItem {
+  id         Int             @id @default(autoincrement())
+  sessionId  Int
+  productId  Int
+  quantity   Int
+  createdAt  DateTime        @default(now())
+  modifiedAt DateTime        @updatedAt
+  userId     Int?
+  product    Product         @relation(fields: [productId], references: [id])
+  session    ShoppingSession @relation(fields: [sessionId], references: [id])
+  user       User?           @relation(fields: [userId], references: [id])
+
+  @@index([sessionId, productId])
+}
+
+//Хэрэглэгчийн захиалгын дэлгэрэнгүй
+model OrderDetails {
+  id             Int              @id @default(autoincrement())
+  userId         Int
+  total          Decimal
+  status         OrderStatus      @default(PENDING)
+  couponId       Int?
+  createdAt      DateTime         @default(now())
+  modifiedAt     DateTime         @updatedAt
+  coupon         Coupon?          @relation(fields: [couponId], references: [id])
+  user           User             @relation(fields: [userId], references: [id])
+  orderItems     OrderItem[]
+  payment        PaymentDetails?
+  shipping       ShippingDetails?
+  vendorPayments VendorPayment[]
+
+  @@index([userId, status])
+  @@index([status])
+}
+
+//???
+model OrderItem {
+  id         Int          @id @default(autoincrement())
+  orderId    Int
+  productId  Int
+  quantity   Int
+  price      Decimal
+  createdAt  DateTime     @default(now())
+  modifiedAt DateTime     @updatedAt
+  order      OrderDetails @relation(fields: [orderId], references: [id])
+  product    Product      @relation(fields: [productId], references: [id])
+
+  @@index([orderId, productId])
+}
+
+//Гүйлгээний дэлгэрэнгүй
+model PaymentDetails {
+  id         Int           @id @default(autoincrement())
+  orderId    Int           @unique
+  amount     Decimal
+  provider   String
+  status     PaymentStatus
+  createdAt  DateTime      @default(now())
+  modifiedAt DateTime      @updatedAt
+  order      OrderDetails  @relation(fields: [orderId], references: [id])
+
+  @@index([status])
+}
+
+model VendorPayment {
+  id            Int           @id @default(autoincrement())
+  vendorId      Int
+  orderId       Int
+  paymentAmount Decimal
+  commission    Decimal
+  paymentDate   DateTime      @default(now())
+  paymentStatus PaymentStatus
+  order         OrderDetails  @relation(fields: [orderId], references: [id])
+  vendor        Vendor        @relation(fields: [vendorId], references: [id])
+
+  @@index([vendorId, paymentStatus])
+}
+
+model VendorRating {
+  id        Int      @id @default(autoincrement())
+  vendorId  Int
+  userId    Int
+  rating    Int
+  review    String
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id])
+  vendor    Vendor   @relation(fields: [vendorId], references: [id])
+
+  @@index([vendorId])
+}
+
+//Хэрэглэгчийн гэрийн хаяг
+model UserAddress {
+  id           Int     @id @default(autoincrement())
+  userId       Int
+  addressLine1 String
+  addressLine2 String?
+  city         String
+  postalCode   String
+  country      String
+  mobile       String
+  user         User    @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+}
+
+model UserPayment {
+  id          Int         @id @default(autoincrement())
+  userId      Int
+  paymentType PaymentType
+  provider    String
+  accountNo   String
+  expiry      DateTime
+  user        User        @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+}
+
+model Wishlist {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  productId Int
+  createdAt DateTime @default(now())
+  product   Product  @relation(fields: [productId], references: [id])
+  user      User     @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+}
+
+model ProductReview {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  productId Int
+  rating    Int
+  review    String
+  createdAt DateTime @default(now())
+  product   Product  @relation(fields: [productId], references: [id])
+  user      User     @relation(fields: [userId], references: [id])
+
+  @@index([productId, rating])
+}
+
+model ProductTag {
+  id        Int     @id @default(autoincrement())
+  productId Int
+  tag       String
+  product   Product @relation(fields: [productId], references: [id])
+
+  @@index([tag])
+}
+
+model ShippingDetails {
+  id                Int          @id @default(autoincrement())
+  orderId           Int          @unique
+  shippingMethod    String
+  trackingNumber    String
+  shippingCost      Decimal
+  estimatedDelivery DateTime
+  createdAt         DateTime     @default(now())
+  modifiedAt        DateTime     @updatedAt
+  order             OrderDetails @relation(fields: [orderId], references: [id])
+}
+
+model Coupon {
+  id              Int            @id @default(autoincrement())
+  code            String         @unique
+  discountPercent Decimal
+  validFrom       DateTime
+  validUntil      DateTime
+  minPurchase     Decimal
+  maxDiscount     Decimal
+  active          Boolean        @default(true)
+  createdAt       DateTime       @default(now())
+  modifiedAt      DateTime       @updatedAt
+  orders          OrderDetails[]
+
+  @@index([code, active])
+}
+
+model LoyaltyPoints {
+  id           Int      @id @default(autoincrement())
+  userId       Int      @unique
+  pointsEarned Int
+  pointsUsed   Int
+  createdAt    DateTime @default(now())
+  modifiedAt   DateTime @updatedAt
+  user         User     @relation(fields: [userId], references: [id])
+}
+
+model ProductRecommendation {
+  id                   Int      @id @default(autoincrement())
+  userId               Int
+  recommendedProductId Int
+  createdAt            DateTime @default(now())
+  modifiedAt           DateTime @updatedAt
+  product              Product  @relation(fields: [recommendedProductId], references: [id])
+  user                 User     @relation(fields: [userId], references: [id])
+
+  @@unique([userId, recommendedProductId])
+  @@index([userId])
+}
+
+enum UserRole {
+  CUSTOMER
+  VENDOR
+  ADMIN
+  SUPERADMIN
+}
+
+enum SessionStatus {
+  ACTIVE
+  ABANDONED
+  COMPLETED
+}
+
+enum OrderStatus {
+  PENDING //
+  PROCESSING //
+  SHIPPED //
+  DELIVERED // 
+  CANCELLED //
+}
+
+enum PaymentStatus {
+  PENDING
+  COMPLETED
+  FAILED
+}
+
+enum PaymentType {
+  CREDIT_CARD
+  DEBIT_CARD
+  PAYPAL
+}
+
+enum ProviderType {
+  GOOGLE
+  FACEBOOK
+}
