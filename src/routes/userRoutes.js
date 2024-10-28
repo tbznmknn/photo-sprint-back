@@ -7,6 +7,10 @@ const {
   getList5,
   getDetail5,
   getPhotos5,
+  getUserList,
+  getUserDetail,
+  getUserPhoto,
+  getTest,
 } = require("../controllers/userController");
 const { editUserDetailsSchema } = require("../schemas/userSchema"); // Import the Zod schema
 // const { loginSchema, createUserSchema } = require("../schemas/userSchema"); // Import the Zod schema
@@ -14,9 +18,13 @@ const validateRequest = require("../middlewares/validateRequests"); // Import th
 const { protect, authorize } = require("../middlewares/protect");
 const router = express.Router();
 // router.route("/register").post(validateRequest(createUserSchema), createUser);
-router.route("/list").get(getList5);
-router.route("/:id").get(getDetail5);
-router.route("/photosOfUser/:id").get(getPhotos5);
+router.route("/test").get(getTest);
+router.route("/list").get(getUserList);
+router.route("/:id").get(getUserDetail);
+router.route("/photosOfUser/:id").get(getUserPhoto);
+// router.route("/list").get(getList5);
+// router.route("/:id").get(getDetail5);
+// router.route("/photosOfUser/:id").get(getPhotos5);
 // router
 //   .route("/getusers")
 //   .get(protect, authorize("ADMIN", "SUPERADMIN"), getUsers); // Хэрэглэгчийн эрх солих. Админ нь л хийж болно. Өөрийнхөө эрхээ өөрчилж болохгүй

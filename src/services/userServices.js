@@ -1,6 +1,10 @@
 const AppError = require("../utils/AppError");
 const bcrypt = require("bcrypt");
-const { cs142models } = require("./photoApp");
+const { cs142models } = require("../../modelData/photoApp");
+const User = require("../models/user");
+const SchemaInfo = require("../models/schemaInfo");
+const Photo = require("../models/photo");
+const { identity } = require("lodash");
 exports.getUsers5 = async () => {
   const users = cs142models.userListModel();
   return users;
@@ -12,6 +16,35 @@ exports.getDetails5 = async (id) => {
 exports.getPhotos5 = async (id) => {
   const photos = cs142models.photoOfUserModel(id);
   return photos;
+};
+
+exports.getTest = async () => {
+  const users = cs142models.userListModel();
+  return users;
+};
+exports.getUserList = async (id) => {
+  const monData = await User.find({});
+  return monData;
+};
+exports.getUserDetail = async (id) => {
+  console.log("id", id);
+  const monData = await User.findOne({ _id: id });
+  if (!monData) {
+    console.log("Error");
+    throw new AppError("Хэрэглэгч олдсонгүй", 400);
+  }
+  return monData;
+};
+exports.getUserPhoto = async (id) => {
+  console.log("id", id);
+  const photos = cs142models.photoOfUserModel("57231f1a30e4351f4e9f4bd7");
+  console.log("photos", Photo);
+  const monData = await Photo.find({ user_id: id });
+  if (!monData) {
+    console.log("Error");
+    throw new AppError("Хэрэглэгч олдсонгүй", 400);
+  }
+  return monData;
 };
 // exports.getUsers = async (userId, queries) => {
 //   const page = parseInt(queries.page) || 1;

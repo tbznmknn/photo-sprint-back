@@ -6,6 +6,7 @@ const routes = require("./routes");
 const errorHandler = require("./middlewares/errorHandler");
 const { consoleEndpointLogger } = require("./utils/logger");
 const morganMiddleware = require("./middlewares/loggerMiddleware");
+const connectDB = require("./config/database");
 const app = express();
 const passport = require("passport");
 require("colors");
@@ -19,6 +20,8 @@ app.use(cors());
 app.use(helmet());
 app.use(compression());
 app.use(passport.initialize());
+
+connectDB();
 // Routes
 app.use("/api/v1", routes);
 

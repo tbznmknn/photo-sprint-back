@@ -4,12 +4,15 @@ const userServices = require("../services/userServices");
 const AppError = require("../utils/AppError");
 const { logger } = require("../utils/logger");
 exports.getList5 = catchAsync(async (req, res, next) => {
+  console.log("called");
   const users = await userServices.getUsers5();
-  return res.status(200).json({
-    success: true,
-    data: users,
-    message: "Амжилттай авлаа",
-  });
+  console.log(users);
+  // return res.status(200).json({
+  //   success: true,
+  //   data: users,
+  //   message: "Амжилттай авлаа",
+  // });
+  return res.status(200).json(users);
 });
 exports.getDetail5 = catchAsync(async (req, res, next) => {
   const { id } = req.params;
@@ -24,6 +27,41 @@ exports.getPhotos5 = catchAsync(async (req, res, next) => {
   const { id } = req.params;
 
   const users = await userServices.getPhotos5(id);
+  return res.status(200).json({
+    success: true,
+    data: users,
+    message: "Амжилттай авлаа",
+  });
+});
+exports.getTest = catchAsync(async (req, res, next) => {
+  const users = await userServices.getTest();
+  return res.status(200).json({
+    success: true,
+    data: users,
+    message: "Амжилттай авлаа",
+  });
+});
+exports.getUserList = catchAsync(async (req, res, next) => {
+  const users = await userServices.getUserList();
+
+  return res.status(200).json({
+    success: true,
+    data: users,
+    message: "Амжилттай авлаа",
+  });
+});
+exports.getUserDetail = catchAsync(async (req, res, next) => {
+  const { id } = req.params;
+  const users = await userServices.getUserDetail(id);
+  return res.status(200).json({
+    success: true,
+    data: users,
+    message: "Амжилттай авлаа",
+  });
+});
+exports.getUserPhoto = catchAsync(async (req, res, next) => {
+  const { id } = req.params;
+  const users = await userServices.getUserPhoto(id);
   return res.status(200).json({
     success: true,
     data: users,
