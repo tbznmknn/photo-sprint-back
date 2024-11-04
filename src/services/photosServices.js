@@ -6,41 +6,57 @@ const SchemaInfo = require("../models/schemaInfo");
 const Photo = require("../models/photo");
 const mongoose = require("mongoose");
 const { identity } = require("lodash");
-exports.getUsers5 = async () => {
-  const users = cs142models.userListModel();
-  return users;
-};
-exports.getDetails5 = async (id) => {
-  const user = cs142models.userModel(id);
-  return user;
-};
-exports.getPhotos5 = async (id) => {
-  const photos = cs142models.photoOfUserModel(id);
-  return photos;
-};
 
-exports.getTest = async () => {
-  const users = cs142models.userListModel();
-  return users;
-};
-exports.getUserList = async (id) => {
-  const monData = await User.find({});
-  return monData;
-};
-exports.getUserDetail = async (id) => {
+// exports.getUserDetail = async (id) => {
+//   if (!mongoose.Types.ObjectId.isValid(id)) {
+//     throw new AppError("Формат буруу байнай", 400);
+//   }
+//   const monData = await User.findOne({ _id: id });
+//   if (!monData) {
+//     console.log("Error");
+//     throw new AppError("Хэрэглэгч олдсонгүй", 400);
+//   }
+//   return monData;
+// };
+exports.getUserPhoto = async (id) => {
   if (!mongoose.Types.ObjectId.isValid(id)) {
     throw new AppError("Формат буруу байнай", 400);
   }
-  const monData = await User.findOne({ _id: id });
-  if (!monData) {
+  const monData = await Photo.find({ user_id: id }).populate({
+    path: "user_id",
+    select: "_id first_name last_name", // Specify the fields you want to include
+  });
+
+  if (!monData || monData.length === 0) {
     console.log("Error");
     throw new AppError("Хэрэглэгч олдсонгүй", 400);
   }
   return monData;
 };
-exports.getUserPhoto = async (id) => {
+exports.getPhotoComments = async (id) => {
   if (!mongoose.Types.ObjectId.isValid(id)) {
-    throw new AppError("Формат буруу байнай", 400);
+    throw new AppError("Формат буруу байна", 400);
+  }
+  const monData = await Photo.find({ user_id: id }).populate({
+    path: "user_id",
+    select: "_id first_name last_name", // Specify the fields you want to include
+  });
+
+  if (!monData || monData.length === 0) {
+    console.log("Error");
+    throw new AppError("Хэрэглэгч олдсонгүй", 400);
+  }
+  return monData;
+};
+exports.addPhotoComment = async (photoId, userId, comments) => {
+  if (
+    !mongoose.Types.ObjectId.isValid(userId) ||
+    !mongoose.Types.ObjectId.isValid(photoId)
+  ) {
+    throw new AppError("Формат буруу байна", 400);
+  }
+  if (!comments) {
+    throw new AppError("Коммент олдсонгүй", 400);
   }
   const monData = await Photo.find({ user_id: id }).populate({
     path: "user_id",

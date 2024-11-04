@@ -3,13 +3,15 @@ const AppError = require("../utils/AppError");
 const User = require("../models/user");
 // const jwt = require("jsonwebtoken");
 
-exports.loginUser = async (userData) => {
+exports.loginUser = async (userData, session) => {
   const { login_name } = userData;
   const user = await User.findOne({ login_name });
   console.log("user", user, login_name);
   if (!user) {
     throw new AppError("Invalid login credentials", 400);
   }
+  session.userId = user._id;
+  session.firstName = user.first_name;
   return {
     userId: user._id,
     firstName: user.first_name,

@@ -24,6 +24,7 @@ exports.getTest = async () => {
   return users;
 };
 exports.getUserList = async (id) => {
+  console.log("sadf");
   const monData = await User.find({});
   return monData;
 };

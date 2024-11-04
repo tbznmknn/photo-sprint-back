@@ -4,7 +4,7 @@ const AppError = require("../utils/AppError");
 const { logger } = require("../utils/logger");
 const { createLogger } = require("winston");
 exports.loginUser = catchAsync(async (req, res, next) => {
-  const user = await adminServices.loginUser(req.body);
+  const user = await adminServices.loginUser(req.body, req.session);
   return res.status(200).json({
     success: true,
     data: user,
