@@ -1,6 +1,33 @@
 const AppError = require("../utils/AppError");
-const bcrypt = require("bcrypt");
-const jwt = require("jsonwebtoken");
+// const bcrypt = require("bcrypt");
+const User = require("../models/user");
+// const jwt = require("jsonwebtoken");
+
+exports.loginUser = async (userData) => {
+  const { login_name } = userData;
+  const user = await User.findOne({ login_name });
+  console.log("user", user, login_name);
+  if (!user) {
+    throw new AppError("Invalid login credentials", 400);
+  }
+  return {
+    userId: user._id,
+    firstName: user.first_name,
+  };
+};
+exports.logoutUser = (session) => {
+  if (!session.userId) {
+    throw new AppError("User is not logged in", 400);
+  }
+
+  session.destroy((err) => {
+    if (err) {
+      throw new AppError("Failed to log out", 500);
+    }
+  });
+};
+
+//OTHERS
 exports.createUser = async (userData) => {
   // const existingUser = await db.user.findFirst({
   //   where: {
@@ -145,76 +172,3 @@ exports.deleteUser = async (userId, userData) => {
   // });
   // return user;
 };
-
-//PAGINATION BY SINGLE ID
-// exports.getUsers = async (req, res) => {
-//   const page = parseInt(queries.page) || 1;
-//   const limit = parseInt(queries.limit) || 10;
-//   const skip = (page - 1) * limit;
-//   // const search = queries.search || "";
-//   const email = queries.email || "";
-//   const phone = queries.phone_number || "";
-//   const companyName = queries.company_name || "";
-//   const useServerQuery = queries.useServer || "";
-
-//   const useServer = useServerQuery == "true";
-
-//   const sortField = queries.sortField || "createdAt";
-//   const sortOrder = queries.sortOrder || "desc";
-//   const filters = {
-//     AND: [
-//       companyName ? { company_name: { contains: companyName } } : {},
-//       email ? { email: { contains: email } } : {},
-
-//       phone ? { phone_number: { contains: phone } } : {},
-//       useServerQuery ? { useServer: useServer } : {},
-//       { hudaldan_avagch: null },
-//       { role: "USER" },
-//       { registeredBy: null },
-//       // useServer ? { useServer: false } : {},
-//     ],
-//   };
-//   try {
-//     const users = await prisma.user.findMany({
-//       skip,
-//       take: limit,
-//       // where: filters,
-
-//       orderBy: {
-//         [sortField]: sortOrder,
-//       },
-//       // include: {
-//       //   hudaldan_avagch: {
-//       //     select: { info_check: true },
-//       //   },
-//       // },
-//       select: {
-//         id: true,
-//         email: true,
-//         emailVerified: true,
-//         role: true,
-//         company_name: true,
-//         phone_number: true,
-//       },
-//     });
-
-//     const total = await prisma.user.count({
-//       where: filters,
-//     });
-
-//     const totalPages = Math.ceil(total / limit);
-
-//     res.status(200).json({
-//       success: true,
-//       data: users,
-//       pagination: {
-//         total,
-//         totalPages,
-//         currentPage: page,
-//         limit,
-//       },
-//     });
-//   } catch (errors) {
-//     res.status(500).json({ success: false, message: "Server error" });
-//   }
-// };

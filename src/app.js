@@ -9,13 +9,27 @@ const morganMiddleware = require("./middlewares/loggerMiddleware");
 const connectDB = require("./config/database");
 const app = express();
 const passport = require("passport");
+// Project 7 Libraries
+const session = require("express-session");
+const bodyParser = require("body-parser");
+const multer = require("multer");
 require("colors");
 
 // Middleware setup
 app.use(morganMiddleware);
 app.use(consoleEndpointLogger);
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+// app.use(express.json());
+// app.use(express.urlencoded({ extended: true }));
+
+app.use(
+  session({
+    secret: process.env.SESSION_SECRET,
+    resave: false,
+    saveUninitialized: false,
+  })
+);
+app.use(bodyParser.json());
+
 app.use(cors());
 app.use(helmet());
 app.use(compression());
