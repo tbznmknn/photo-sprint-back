@@ -12,7 +12,9 @@ const userSchema = new mongoose.Schema({
   description: String,
   occupation: String,
   login_name: String,
-  password: String,
+  // password: String,
+  password_digest: String,
+  salt: String,
 });
 
 /**

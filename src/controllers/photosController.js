@@ -14,17 +14,33 @@ exports.getPhotoComments = catchAsync(async (req, res, next) => {
   });
 });
 exports.addPhotoComment = catchAsync(async (req, res, next) => {
-  const { id } = req.params;
-  // const userId = req.sessions.
-  console.log(id);
-  console.log("session", req.session);
-  return res.status(200).json({
-    message: "Амжилттай авлаа",
-  });
-  const users = await photosServices.addPhotoComment(id);
+  const { photo_id } = req.params;
+
+  const photoComment = await photosServices.addPhotoComment(
+    photo_id,
+    req.session.userId,
+    req.body
+  );
   return res.status(200).json({
     success: true,
-    data: users,
+    data: photoComment,
+    message: "Амжилттай авлаа",
+  });
+});
+exports.addPhoto = catchAsync(async (req, res, next) => {
+  const photo = await photosServices.addPhoto(req.file, req.session.userId);
+  return res.status(200).json({
+    success: true,
+    data: photo,
+    message: "Амжилттай авлаа",
+  });
+});
+exports.getPhotoDetail = catchAsync(async (req, res, next) => {
+  const { id } = req.params;
+  const photo = await photosServices.getPhotoDetail(id);
+  return res.status(200).json({
+    success: true,
+    data: photo,
     message: "Амжилттай авлаа",
   });
 });

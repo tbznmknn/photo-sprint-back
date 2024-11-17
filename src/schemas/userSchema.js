@@ -4,12 +4,37 @@ const { z } = require("zod");
 exports.loginSchema = z.object({
   body: z.object({
     login_name: z.string().min(1, "Login name is required"),
-    // password: z
-    //   .string()
-    //   .min(8, "Password is required and must be at least 8 characters long"),
+    password: z
+      .string()
+      .min(8, "Password is required and must be at least 8 characters long"),
   }),
 });
-
+exports.registerSchema = z.object({
+  body: z.object({
+    first_name: z.string().optional(),
+    last_name: z.string().optional(),
+    location: z.string().optional(),
+    description: z.string().optional(),
+    occupation: z.string().optional(),
+    login_name: z
+      .string()
+      .min(1, "Login name is required")
+      .regex(
+        /^[a-zA-Z0-9]+$/,
+        "Login name can only contain alphanumeric characters"
+      ),
+    password: z
+      .string()
+      .min(8, "Password must be at least 8 characters long")
+      .regex(/[A-Z]/, "Password must contain at least one uppercase letter")
+      .regex(/[a-z]/, "Password must contain at least one lowercase letter")
+      .regex(/[0-9]/, "Password must contain at least one digit")
+      .regex(
+        /[!@#$%^&*(),.?":{}|<>]/,
+        "Password must contain at least one special character"
+      ),
+  }),
+});
 // Define Zod schema for user registration
 // exports.loginSchema = z.object({
 //   body: z.object({

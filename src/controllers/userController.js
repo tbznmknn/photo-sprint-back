@@ -59,6 +59,15 @@ exports.getUserDetail = catchAsync(async (req, res, next) => {
     message: "Амжилттай авлаа",
   });
 });
+exports.getUserComments = catchAsync(async (req, res, next) => {
+  const { id } = req.params;
+  const users = await userServices.getUserComments(id);
+  return res.status(200).json({
+    success: true,
+    data: users,
+    message: "Амжилттай авлаа",
+  });
+});
 exports.getUserPhoto = catchAsync(async (req, res, next) => {
   const { id } = req.params;
   const users = await userServices.getUserPhoto(id);

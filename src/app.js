@@ -9,10 +9,10 @@ const morganMiddleware = require("./middlewares/loggerMiddleware");
 const connectDB = require("./config/database");
 const app = express();
 const passport = require("passport");
+const path = require("path");
 // Project 7 Libraries
 const session = require("express-session");
 const bodyParser = require("body-parser");
-const multer = require("multer");
 require("colors");
 
 // Middleware setup
@@ -25,12 +25,23 @@ app.use(
   session({
     secret: process.env.SESSION_SECRET,
     resave: false,
-    saveUninitialized: false,
+    saveUninitialized: true,
+    cookie: {
+      secure: process.env.NODE_ENV === "production",
+      maxAge: 30 * 24 * 60 * 60 * 1000, //30days
+      httpOnly: true,
+      // sameSite: "None",
+    },
   })
 );
 app.use(bodyParser.json());
 
-app.use(cors());
+app.use(
+  cors({
+    origin: "http://localhost:3000",
+    credentials: true,
+  })
+);
 app.use(helmet());
 app.use(compression());
 app.use(passport.initialize());
@@ -38,6 +49,9 @@ app.use(passport.initialize());
 connectDB();
 // Routes
 app.use("/api/v1", routes);
+console.log(path.join(__dirname, "../uploads"));
+app.use("/api/v1/uploads", express.static(path.join(__dirname, "../uploads")));
+// app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 // Error Handling
 app.use(errorHandler);

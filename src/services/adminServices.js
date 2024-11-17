@@ -1,23 +1,33 @@
 const AppError = require("../utils/AppError");
-// const bcrypt = require("bcrypt");
 const User = require("../models/user");
-// const jwt = require("jsonwebtoken");
+const {
+  doesPasswordMatch,
+  makePasswordEntry,
+} = require("../utils/cs142password");
 
 exports.loginUser = async (userData, session) => {
-  const { login_name } = userData;
+  // const allUser = await User.find();
+  // console.log("all", allUser);
+  const { login_name, password } = userData;
   const user = await User.findOne({ login_name });
-  console.log("user", user, login_name);
   if (!user) {
-    throw new AppError("Invalid login credentials", 400);
+    throw new AppError("Нэвтрэх имэйл буруу байна", 400);
+  }
+  const { password_digest, salt } = user;
+  const isMatch = doesPasswordMatch(password_digest, salt, password);
+  if (!isMatch) {
+    throw new AppError("Нууц үг буруу байна", 400);
   }
   session.userId = user._id;
   session.firstName = user.first_name;
+  console.log(session.userId);
   return {
     userId: user._id,
     firstName: user.first_name,
   };
 };
 exports.logoutUser = (session) => {
+  console.log(session);
   if (!session.userId) {
     throw new AppError("User is not logged in", 400);
   }
@@ -28,7 +38,40 @@ exports.logoutUser = (session) => {
     }
   });
 };
+exports.registerUser = async (userData) => {
+  const {
+    login_name,
+    first_name,
+    last_name,
+    password,
+    occupation,
+    description,
+    location,
+  } = userData;
 
+  // Check if login_name is already taken
+  const existingUser = await User.findOne({ login_name });
+  if (existingUser) {
+    throw new AppError("Login name already exists", 400);
+  }
+
+  // Generate the salted and hashed password
+  const { salt, hash: password_digest } = makePasswordEntry(password);
+
+  // Create and save the user
+  const newUser = await User.create({
+    login_name,
+    first_name,
+    last_name,
+    password_digest,
+    salt,
+    occupation,
+    description,
+    location,
+  });
+
+  return newUser;
+};
 //OTHERS
 exports.createUser = async (userData) => {
   // const existingUser = await db.user.findFirst({

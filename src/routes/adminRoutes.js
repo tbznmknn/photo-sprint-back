@@ -2,22 +2,9 @@ const express = require("express");
 const {
   loginUser,
   logoutUser,
-  // createUser,
-  // loginWithCredentials,
-  // changePassword,
-  // changeUserRole,
-  // deleteUser,
-  // getUsers,
-  // getUserDetailByAdmin,
-  // getUserDetailBySameUser,
-  // editUserDetailsBySameUser,
+  registerUser,
 } = require("../controllers/adminController");
-const {
-  loginSchema,
-  // createUserSchema,
-  // changePasswordSchema,
-  // editUserDetailsSchema,
-} = require("../schemas/userSchema"); // Import the Zod schema
+const { loginSchema, registerSchema } = require("../schemas/userSchema"); // Import the Zod schema
 const validateRequest = require("../middlewares/validateRequests"); // Import the validation middleware
 const { protect, authorize } = require("../middlewares/protect");
 const router = express.Router();
@@ -28,7 +15,8 @@ require("../strategies/facebook-strategy");
 //ROUTES
 // router.route("/register").post(validateRequest(createUserSchema), createUser); //Хэрэглэгч бүртгүүлнэ
 router.route("/login").post(validateRequest(loginSchema), loginUser); //Хэрэглэгч нэвтэрнэ
-router.route("/logout").post(validateRequest(loginSchema), logoutUser); //Хэрэглэгч нэвтэрнэ
+router.route("/register").post(validateRequest(registerSchema), registerUser); //Хэрэглэгч нэвтэрнэ
+router.route("/logout").post(logoutUser); //Хэрэглэгч нэвтэрнэ
 // router
 //   .route("/changepassword")
 //   .put(protect, validateRequest(changePasswordSchema), changePassword); //Пассворд солих. Нэвтэрсэн байх шаардлагатай

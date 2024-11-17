@@ -6,6 +6,7 @@ const SchemaInfo = require("../models/schemaInfo");
 const Photo = require("../models/photo");
 const mongoose = require("mongoose");
 const { identity } = require("lodash");
+const { createLogger } = require("winston");
 exports.getUsers5 = async () => {
   const users = cs142models.userListModel();
   return users;
@@ -23,10 +24,76 @@ exports.getTest = async () => {
   const users = cs142models.userListModel();
   return users;
 };
+exports.getUserComments = async (userId) => {
+  try {
+    const photos = await Photo.find({ "comments.user_id": userId }).exec();
+    const userComments = photos.flatMap((photo) =>
+      photo.comments
+        .filter(
+          (comment) => comment.user_id && comment.user_id.toString() === userId
+        )
+        .map((comment) => ({
+          file_name: photo.file_name,
+          comment: comment.comment,
+          date_time: comment.date_time,
+          id: photo.id,
+        }))
+    );
+
+    return userComments;
+  } catch (error) {
+    console.error("Error fetching user comments:", error);
+    throw error;
+  }
+};
+
 exports.getUserList = async (id) => {
-  console.log("sadf");
-  const monData = await User.find({});
-  return monData;
+  const userList = await User.aggregate([
+    {
+      $lookup: {
+        from: "photos",
+        localField: "_id",
+        foreignField: "user_id",
+        as: "photos",
+      },
+    },
+    {
+      $addFields: {
+        numPhotos: { $size: "$photos" },
+        numComments: {
+          $sum: {
+            $map: {
+              input: "$photos",
+              as: "photo",
+              in: {
+                $size: {
+                  $filter: {
+                    input: "$$photo.comments",
+                    as: "comment",
+                    cond: { $eq: ["$$comment.user_id", "$_id"] },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+    {
+      $project: {
+        first_name: 1,
+        last_name: 1,
+        location: 1,
+        description: 1,
+        occupation: 1,
+        login_name: 1,
+        numPhotos: 1,
+        numComments: 1,
+      },
+    },
+  ]);
+
+  return userList;
 };
 exports.getUserDetail = async (id) => {
   if (!mongoose.Types.ObjectId.isValid(id)) {
@@ -40,6 +107,7 @@ exports.getUserDetail = async (id) => {
   return monData;
 };
 exports.getUserPhoto = async (id) => {
+  console.log("asdfasfad");
   if (!mongoose.Types.ObjectId.isValid(id)) {
     throw new AppError("Формат буруу байнай", 400);
   }
@@ -49,9 +117,12 @@ exports.getUserPhoto = async (id) => {
   });
 
   if (!monData || monData.length === 0) {
+    return [];
     console.log("Error");
     throw new AppError("Хэрэглэгч олдсонгүй", 400);
   }
+  console.log("asdfasfad");
+
   return monData;
 };
 // exports.getUsers = async (userId, queries) => {

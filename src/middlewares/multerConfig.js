@@ -1,51 +1,40 @@
 const multer = require("multer");
 const path = require("path");
-const fs = require("fs");
-const AppError = require("../utils/AppError");
-// Define storage
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    let dir = path.join(__dirname, "../../uploads/");
 
-    // Set destination based on file type
-    if (file.mimetype.startsWith("image/")) {
-      dir += "products/"; // All images go to products for simplicity
-    } else if (file.mimetype.startsWith("application/")) {
-      dir += "documents/";
-    } else if (file.mimetype.startsWith("video/")) {
-      dir += "videos/";
-    } else {
-      return cb(new Error("Invalid file type."));
-    }
-
-    // Create directory if it doesn't exist
-    if (!fs.existsSync(dir)) {
-      fs.mkdirSync(dir, { recursive: true });
-    }
-    cb(null, dir);
-  },
-  filename: (req, file, cb) => {
-    // Generate a unique filename using timestamp and original name
-    const uniqueName = `${Date.now()}-${file.originalname}`;
-    cb(null, uniqueName);
+//GEEKSFORGEEKS BOILERPLATE CODE
+const storageConfig = multer.diskStorage({
+  // destinations is uploads folder
+  // under the project directory
+  destination: path.join(__dirname, "../../uploads"),
+  filename: (req, file, res) => {
+    // file name is prepended with current time
+    // in milliseconds to handle duplicate file names
+    res(null, Date.now() + "-" + file.originalname);
   },
 });
 
-// Set up Multer with a file size limit of 5 MB
-const upload = multer({
-  storage: storage,
-  limits: { fileSize: 5 * 1024 * 1024 }, // 5 MB limit
-});
-const uploadErrorHandler = (err, req, res, next) => {
-  if (err instanceof multer.MulterError) {
-    if (err.code === "LIMIT_FILE_SIZE") {
-      throw new AppError("File too large. Maximum size is 5 MB.", 400);
-    }
-    throw new AppError(`Multer Error: ${err.message}`, 400);
-  } else if (err) {
-    throw new AppError(err);
+// file filter for filtering only images
+const fileFilterConfig = function (req, file, cb) {
+  if (file.mimetype === "image/jpeg" || file.mimetype === "image/png") {
+    // calling callback with true
+    // as mimetype of file is image
+    cb(null, true);
+  } else {
+    // false to indicate not to store the file
+    cb(null, false);
   }
-  next();
 };
 
-module.exports = { upload, uploadErrorHandler }; // Export the upload configuration
+// creating multer object for storing
+// with configuration
+const upload = multer({
+  // applying storage and file filter
+  storage: storageConfig,
+  limits: {
+    // limits file size to 5 MB
+    fileSize: 1024 * 1024 * 5,
+  },
+  fileFilter: fileFilterConfig,
+});
+
+module.exports = upload;

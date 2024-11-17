@@ -4,6 +4,7 @@ const AppError = require("../utils/AppError");
 const { logger } = require("../utils/logger");
 const { createLogger } = require("winston");
 exports.loginUser = catchAsync(async (req, res, next) => {
+  console.log("cookie", req.session);
   const user = await adminServices.loginUser(req.body, req.session);
   return res.status(200).json({
     success: true,
@@ -14,17 +15,16 @@ exports.logoutUser = catchAsync(async (req, res, next) => {
   await adminServices.logoutUser(req.session);
   return res.status(200).json({
     success: true,
-    // data: user,
   });
 });
 
-// exports.createUser = catchAsync(async (req, res, next) => {
-//   const user = await adminServices.createUser(req.body);
-//   res.status(201).json({
-//     success: true,
-//     data: user,
-//   });
-// });
+exports.registerUser = catchAsync(async (req, res, next) => {
+  const user = await adminServices.registerUser(req.body);
+  res.status(201).json({
+    success: true,
+    data: user,
+  });
+});
 // exports.loginWithCredentials = catchAsync(async (req, res, next) => {
 //   const user = await adminServices.loginWithCredentials(req.body);
 //   return res.status(200).json({
