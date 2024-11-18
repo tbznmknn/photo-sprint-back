@@ -15,10 +15,10 @@ exports.getPhotoComments = catchAsync(async (req, res, next) => {
 });
 exports.addPhotoComment = catchAsync(async (req, res, next) => {
   const { photo_id } = req.params;
-
+  console.log("aaaa");
   const photoComment = await photosServices.addPhotoComment(
     photo_id,
-    req.session.userId,
+    req.userId,
     req.body
   );
   return res.status(200).json({
@@ -28,7 +28,7 @@ exports.addPhotoComment = catchAsync(async (req, res, next) => {
   });
 });
 exports.addPhoto = catchAsync(async (req, res, next) => {
-  const photo = await photosServices.addPhoto(req.file, req.session.userId);
+  const photo = await photosServices.addPhoto(req.file, req.userId);
   return res.status(200).json({
     success: true,
     data: photo,

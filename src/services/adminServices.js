@@ -4,10 +4,8 @@ const {
   doesPasswordMatch,
   makePasswordEntry,
 } = require("../utils/cs142password");
-
+const jwt = require("jsonwebtoken");
 exports.loginUser = async (userData, session) => {
-  // const allUser = await User.find();
-  // console.log("all", allUser);
   const { login_name, password } = userData;
   const user = await User.findOne({ login_name });
   if (!user) {
@@ -18,10 +16,21 @@ exports.loginUser = async (userData, session) => {
   if (!isMatch) {
     throw new AppError("Нууц үг буруу байна", 400);
   }
+  const token = jwt.sign(
+    {
+      id: user._id,
+      first_name: user.first_name,
+      last_name: user.last_name,
+      login_name: user.login_name,
+    },
+    process.env.AUTH_SECRET,
+    { expiresIn: "30day" }
+  );
   session.userId = user._id;
   session.firstName = user.first_name;
   console.log(session.userId);
   return {
+    token: token,
     userId: user._id,
     firstName: user.first_name,
   };

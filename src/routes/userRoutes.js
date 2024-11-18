@@ -15,11 +15,11 @@ const router = express.Router();
 // router.route("/register").post(validateRequest(createUserSchema), createUser);
 
 router.route("/").post(validateRequest(registerSchema), registerUser);
-router.route("/test").get(getTest);
-router.route("/list").get(getUserList);
-router.route("/comments/:id").get(getUserComments);
-router.route("/:id").get(getUserDetail);
-router.route("/photosOfUser/:id").get(getUserPhoto);
+router.route("/test").get(protect, getTest);
+router.route("/list").get(protect, getUserList);
+router.route("/comments/:id").get(protect, getUserComments);
+router.route("/:id").get(protect, getUserDetail);
+router.route("/photosOfUser/:id").get(protect, getUserPhoto);
 // router.route("/list").get(getList5);
 // router.route("/:id").get(getDetail5);
 // router.route("/photosOfUser/:id").get(getPhotos5);

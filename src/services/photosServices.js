@@ -35,7 +35,10 @@ exports.addPhotoComment = async (photoId, userId, photoDetail) => {
   if (!mongoose.Types.ObjectId.isValid(photoId)) {
     throw new AppError("Формат буруу байна", 400);
   }
+
   const { comment } = photoDetail;
+  console.log("aaaa", comment, userId);
+
   if (!comment) {
     throw new AppError("Коммент оруулна уу", 400);
   }
