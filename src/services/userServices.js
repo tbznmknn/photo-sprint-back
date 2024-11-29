@@ -112,10 +112,12 @@ exports.getUserPhoto = async (id) => {
   if (!mongoose.Types.ObjectId.isValid(id)) {
     throw new AppError("Формат буруу байнай", 400);
   }
-  const monData = await Photo.find({ user_id: id }).populate({
-    path: "user_id",
-    select: "_id first_name last_name", // Specify the fields you want to include
-  });
+  const monData = await Photo.find({ user_id: id })
+    .populate({
+      path: "user_id",
+      select: "_id first_name last_name",
+    })
+    .sort({ likes: -1, createdAt: -1 });
 
   if (!monData || monData.length === 0) {
     return [];
@@ -126,6 +128,23 @@ exports.getUserPhoto = async (id) => {
 
   return monData;
 };
+exports.deleteUserAccount = async (userId) => {
+  const user = await User.findById(userId);
+  if (!user) {
+    throw new AppError("Хэрэглэгч олдсонгүй", 400);
+  }
+  const userPhotos = await Photo.find({ user_id: userId });
+  const photoIds = userPhotos.map((photo) => photo._id);
+  await Photo.updateMany(
+    { "comments.user_id": userId },
+    { $pull: { comments: { user_id: userId } } }
+  );
+  await Activity.deleteMany({ user: userId });
+  await Photo.deleteMany({ user_id: userId });
+  await User.findByIdAndDelete(userId);
+  return { message: "Хэрэглэгчийн бүртгэл амжилттай устгагдлаа" };
+};
+
 // exports.getUsers = async (userId, queries) => {
 //   const page = parseInt(queries.page) || 1;
 //   const limit = parseInt(queries.limit) || 10;

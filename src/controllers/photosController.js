@@ -45,3 +45,33 @@ exports.getPhotoDetail = catchAsync(async (req, res, next) => {
     message: "Амжилттай авлаа",
   });
 });
+exports.toggleLikePhoto = catchAsync(async (req, res, next) => {
+  const { id } = req.params;
+  const photo = await photosServices.toggleLikePhoto(id, req.userId);
+
+  return res.status(200).json({
+    success: true,
+    data: photo,
+    message: "Амжилттай",
+  });
+});
+exports.deletePhoto = catchAsync(async (req, res, next) => {
+  const { id } = req.params;
+  const photo = await photosServices.deletePhoto(id, req.userId);
+
+  return res.status(200).json({
+    success: true,
+    data: photo,
+    message: "Амжилттай",
+  });
+});
+exports.deleteComment = catchAsync(async (req, res, next) => {
+  const { comment_id } = req.params;
+  const photo = await photosServices.deleteComment(comment_id, req.userId);
+
+  return res.status(200).json({
+    success: true,
+    data: photo,
+    message: "Амжилттай",
+  });
+});

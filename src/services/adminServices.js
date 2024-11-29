@@ -10,7 +10,7 @@ exports.loginUser = async (userData, session) => {
   const { login_name, password } = userData;
   const user = await User.findOne({ login_name });
   if (!user) {
-    throw new AppError("Нэвтрэх имэйл буруу байна", 400);
+    throw new AppError("Хэрэглэгч олдсонгүй", 400);
   }
   const { password_digest, salt } = user;
   const isMatch = doesPasswordMatch(password_digest, salt, password);

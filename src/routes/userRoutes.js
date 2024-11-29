@@ -5,6 +5,7 @@ const {
   getUserPhoto,
   getTest,
   getUserComments,
+  deleteUserAccount,
 } = require("../controllers/userController");
 const { registerUser } = require("../controllers/adminController");
 const { editUserDetailsSchema } = require("../schemas/userSchema"); // Import the Zod schema
@@ -14,7 +15,10 @@ const { protect, authorize } = require("../middlewares/protect");
 const router = express.Router();
 // router.route("/register").post(validateRequest(createUserSchema), createUser);
 
-router.route("/").post(validateRequest(registerSchema), registerUser);
+router
+  .route("/")
+  .post(validateRequest(registerSchema), registerUser)
+  .delete(protect, deleteUserAccount);
 router.route("/test").get(protect, getTest);
 router.route("/list").get(protect, getUserList);
 router.route("/comments/:id").get(protect, getUserComments);

@@ -77,6 +77,14 @@ exports.getUserPhoto = catchAsync(async (req, res, next) => {
     message: "Амжилттай авлаа",
   });
 });
+exports.deleteUserAccount = catchAsync(async (req, res, next) => {
+  const users = await userServices.deleteUserAccount(req.userId);
+  return res.status(200).json({
+    success: true,
+    data: users,
+    message: "Амжилттай устгагдлаа",
+  });
+});
 // exports.getUsers = catchAsync(async (req, res, next) => {
 //   const { users, pagination } = await userServices.getUsers(
 //     req.userId,

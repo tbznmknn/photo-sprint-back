@@ -21,6 +21,7 @@ exports.protect = catchAsync(async (req, res, next) => {
   if (!token) {
     throw new AppError("TOKEN оруулна уу", 401);
   }
+  console.log(token);
   const tokenObj = jwt.verify(
     token,
     process.env.AUTH_SECRET,
@@ -34,7 +35,7 @@ exports.protect = catchAsync(async (req, res, next) => {
       return decoded;
     }
   );
-  console.log(tokenObj);
+  // console.log(tokenObj);
   //REQ obj дээр хэрэглэгчийн мэдээлэл хадгалаад дараагийн middleware функц руу
   //дараах хувьсагчтайгаа шилжинэ. (Re-usable variables)
   req.userId = tokenObj.id;
