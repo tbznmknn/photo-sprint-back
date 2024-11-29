@@ -7,6 +7,7 @@ const Photo = require("../models/photo");
 const mongoose = require("mongoose");
 const { identity } = require("lodash");
 const { createLogger } = require("winston");
+const Activity = require("../models/activity");
 exports.getUsers5 = async () => {
   const users = cs142models.userListModel();
   return users;

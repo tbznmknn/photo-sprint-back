@@ -5,6 +5,7 @@ const {
   makePasswordEntry,
 } = require("../utils/cs142password");
 const jwt = require("jsonwebtoken");
+const Activity = require("../models/activity");
 exports.loginUser = async (userData, session) => {
   const { login_name, password } = userData;
   const user = await User.findOne({ login_name });
@@ -29,6 +30,10 @@ exports.loginUser = async (userData, session) => {
   session.userId = user._id;
   session.firstName = user.first_name;
   console.log(session.userId);
+  await Activity.create({
+    type: "User Login",
+    user: user._id,
+  });
   return {
     token: token,
     userId: user._id,
@@ -78,8 +83,24 @@ exports.registerUser = async (userData) => {
     description,
     location,
   });
-
+  await Activity.create({
+    type: "User Register",
+    user: newUser._id,
+  });
   return newUser;
+};
+exports.get5Activites = async () => {
+  try {
+    const activities = await Activity.find()
+      .sort({ date_time: -1 })
+      .limit(5)
+      .populate("user", "first_name last_name") // Populate user details
+      .populate("photo", "file_name"); // Populate photo details if applicable
+    return activities;
+  } catch (error) {
+    console.error(error);
+    throw new AppError("Fetch error", 500);
+  }
 };
 //OTHERS
 exports.createUser = async (userData) => {

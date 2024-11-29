@@ -1,6 +1,6 @@
 const catchAsync = require("../utils/catchAsync");
 const photosServices = require("../services/photosServices");
-
+const Activity = require("../models/activity");
 const AppError = require("../utils/AppError");
 const { logger } = require("../utils/logger");
 
@@ -21,6 +21,7 @@ exports.addPhotoComment = catchAsync(async (req, res, next) => {
     req.userId,
     req.body
   );
+
   return res.status(200).json({
     success: true,
     data: photoComment,

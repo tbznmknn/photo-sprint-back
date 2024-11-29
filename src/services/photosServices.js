@@ -1,6 +1,7 @@
 const AppError = require("../utils/AppError");
 const Photo = require("../models/photo");
 const mongoose = require("mongoose");
+const Activity = require("../models/activity");
 exports.getUserPhoto = async (id) => {
   if (!mongoose.Types.ObjectId.isValid(id)) {
     throw new AppError("Формат буруу байнай", 400);
@@ -59,6 +60,11 @@ exports.addPhotoComment = async (photoId, userId, photoDetail) => {
     },
     { new: true }
   );
+  await Activity.create({
+    type: "New Comment",
+    user: userId,
+    photo: photoId,
+  });
   return newComment;
 };
 
@@ -74,7 +80,11 @@ exports.addPhoto = async (file, userId) => {
     file_name: file.filename,
     user_id: userId,
   });
-
+  await Activity.create({
+    type: "Photo Upload",
+    user: userId,
+    photo: photo._id,
+  });
   return photo;
 };
 exports.getPhotoDetail = async (photoId) => {

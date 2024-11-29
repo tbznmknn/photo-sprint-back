@@ -25,6 +25,13 @@ exports.registerUser = catchAsync(async (req, res, next) => {
     data: user,
   });
 });
+exports.get5Activites = catchAsync(async (req, res, next) => {
+  const activity = await adminServices.get5Activites();
+  res.status(200).json({
+    success: true,
+    data: activity,
+  });
+});
 // exports.loginWithCredentials = catchAsync(async (req, res, next) => {
 //   const user = await adminServices.loginWithCredentials(req.body);
 //   return res.status(200).json({

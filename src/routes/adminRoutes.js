@@ -3,12 +3,14 @@ const {
   loginUser,
   logoutUser,
   registerUser,
+  get5Activites,
 } = require("../controllers/adminController");
 const { loginSchema, registerSchema } = require("../schemas/userSchema"); // Import the Zod schema
 const validateRequest = require("../middlewares/validateRequests"); // Import the validation middleware
 const { protect, authorize } = require("../middlewares/protect");
 const router = express.Router();
 const passport = require("passport");
+
 require("../strategies/google-strategy");
 require("../strategies/facebook-strategy");
 
@@ -16,6 +18,7 @@ require("../strategies/facebook-strategy");
 // router.route("/register").post(validateRequest(createUserSchema), createUser); //Хэрэглэгч бүртгүүлнэ
 router.route("/login").post(validateRequest(loginSchema), loginUser); //Хэрэглэгч нэвтэрнэ
 router.route("/register").post(validateRequest(registerSchema), registerUser); //Хэрэглэгч нэвтэрнэ
+router.route("/activity").get(get5Activites); //Хэрэглэгч нэвтэрнэ
 router.route("/logout").post(logoutUser); //Хэрэглэгч нэвтэрнэ
 // router
 //   .route("/changepassword")
